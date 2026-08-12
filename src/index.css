@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-background: #FAFAFA; /* Off-white / light cream */
+    --color-foreground: #1A1A1A; /* Almost black */
+    
+    --color-primary: #111111; /* Dark charcoal */
+    --color-primary-foreground: #FFFFFF;
+    
+    --color-secondary: #E5E5E5; /* Light gray */
+    --color-secondary-foreground: #111111;
+    
+    --color-muted: #F3F3F3;
+    --color-muted-foreground: #666666;
+    
+    --color-accent: #D4C5B9; /* Sand / Cream accent */
+    --color-accent-foreground: #111111;
+    
+    --color-border: #E0E0E0;
+    
+    --color-card: #FFFFFF;
+    --color-card-foreground: #1A1A1A;
+  }
+
+  .dark {
+    --color-background: #0E0E0E; /* Very dark gray */
+    --color-foreground: #EAEAEA; /* Off-white */
+    
+    --color-primary: #FAFAFA;
+    --color-primary-foreground: #0E0E0E;
+    
+    --color-secondary: #222222;
+    --color-secondary-foreground: #EAEAEA;
+    
+    --color-muted: #1A1A1A;
+    --color-muted-foreground: #999999;
+    
+    --color-accent: #A89584; /* Darker sand */
+    --color-accent-foreground: #FFFFFF;
+    
+    --color-border: #222222;
+    
+    --color-card: #151515;
+    --color-card-foreground: #EAEAEA;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
+  }
+}
