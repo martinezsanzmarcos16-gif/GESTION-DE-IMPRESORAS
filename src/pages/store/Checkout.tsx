@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, Loader2, Check, Mail } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
+import { useERPStore } from '../../store/useERPStore';
+import { type CustomerOrder, type PrintJob, type Transaction } from '../../lib/mockData';
 
 export default function Checkout() {
   const { items, getTotalPrice, clearCart } = useCartStore();
+  const { addCustomerOrder, addPrintJob, addTransaction } = useERPStore();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [notification, setNotification] = useState<{message: string, type: 'info' | 'success'} | null>(null);
 
   // Redirect if cart is empty and not in success state
   useEffect(() => {
@@ -20,12 +24,60 @@ export default function Checkout() {
     e.preventDefault();
     setIsSubmitting(true);
     
+    // Simulate email notification
+    const email = (document.getElementById('email') as HTMLInputElement)?.value || 'cliente@email.com';
+    const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value || 'Cliente';
+    const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value || '';
+    
+    setNotification({ message: `Procesando pago y enviando correo de confirmación a ${email}...`, type: 'info' });
+    
     // Simulate API call
     setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      clearCart();
-    }, 1500);
+      // 1. Create Customer Order
+      const orderId = `ord-${Date.now()}`;
+      const newOrder: CustomerOrder = {
+        id: orderId,
+        customerName: `${firstName} ${lastName}`.trim(),
+        entryDate: new Date().toISOString().split('T')[0],
+        status: 'Pendiente'
+      };
+      addCustomerOrder(newOrder);
+
+      // 2. Create Print Jobs for each item
+      items.forEach((item, index) => {
+        for (let i = 0; i < item.quantity; i++) {
+          const newJob: PrintJob = {
+            id: `pj-${Date.now()}-${index}-${i}`,
+            orderId: orderId,
+            productName: item.product.name,
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+            status: 'Pendiente',
+            estimatedHours: 4.5 // Mock estimated hours
+          };
+          addPrintJob(newJob);
+        }
+      });
+
+      // 3. Create Income Transaction
+      const newTransaction: Transaction = {
+        id: `tx-in-${Date.now()}`,
+        type: 'income',
+        amount: getTotalPrice() + 4.99, // Subtotal + shipping
+        category: 'Venta',
+        description: `Venta online - Pedido ${orderId} (${firstName})`,
+        date: new Date().toISOString().split('T')[0]
+      };
+      addTransaction(newTransaction);
+
+      setNotification({ message: `¡Pago completado! Correo enviado con éxito a ${email}.`, type: 'success' });
+
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setIsSuccess(true);
+        clearCart();
+        setNotification(null);
+      }, 1500);
+    }, 2500);
   };
 
   if (isSuccess) {
@@ -62,6 +114,22 @@ export default function Checkout() {
         {/* Form Area */}
         <div className="w-full lg:w-3/5">
           <h1 className="text-2xl font-light mb-8">Checkout</h1>
+          
+          {/* Notification Toast */}
+          {notification && (
+            <div className={`mb-6 p-4 rounded-lg border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
+              notification.type === 'success' 
+                ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-900/30' 
+                : 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900/30'
+            }`}>
+              {notification.type === 'info' ? (
+                <Loader2 className="animate-spin text-blue-500" size={20} />
+              ) : (
+                <Check className="text-green-500" size={20} />
+              )}
+              <span className="font-medium text-sm">{notification.message}</span>
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Contact Info */}

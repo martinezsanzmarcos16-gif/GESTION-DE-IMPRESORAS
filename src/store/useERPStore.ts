@@ -69,7 +69,7 @@ export const useERPStore = create<ERPState>()(
         if (orderIndex === -1) return;
         
         const order = state.purchaseOrders[orderIndex];
-        if (order.status === 'Pagado' || order.status === 'Completado') return; // Already processed
+        if (order.status === 'Pagado') return; // Already processed
 
         // 1. Update material stocks
         const updatedMaterials = [...state.materials];
