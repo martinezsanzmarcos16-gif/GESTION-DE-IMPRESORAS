@@ -4,13 +4,14 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Wallet, Search } from 'lucide-react';
-import { mockTransactions, type Transaction } from '../../lib/mockData';
+import { type Transaction } from '../../lib/mockData';
+import { useERPStore } from '../../store/useERPStore';
 
 // Chart colors
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function FinanceAdmin() {
-  const [transactions] = useState<Transaction[]>(mockTransactions);
+  const { transactions } = useERPStore();
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 

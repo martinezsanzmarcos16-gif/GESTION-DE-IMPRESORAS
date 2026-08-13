@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { mockPrintJobs, mockCustomerOrders, type PrintJob, type CustomerOrder } from "../../lib/mockData";
+import { type PrintJob, type CustomerOrder } from "../../lib/mockData";
+import { useERPStore } from "../../store/useERPStore";
 import { Printer, Calendar, Clock, AlertTriangle, CheckCircle2, MoreVertical, X, Package, Edit, Trash2, Plus, Send, MessageSquare, FileText } from "lucide-react";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 
@@ -10,7 +11,7 @@ type EnrichedPrintJob = PrintJob & {
 };
 
 export default function ProductionAdmin() {
-  const [allPrintJobs, setAllPrintJobs] = useState<PrintJob[]>(mockPrintJobs);
+  const { printJobs: allPrintJobs, customerOrders: allCustomerOrders } = useERPStore();
   const [filter, setFilter] = useState<"all" | "pending" | "printing">("all");
   const [selectedOrder, setSelectedOrder] = useState<CustomerOrder | null>(null);
 
@@ -18,7 +19,7 @@ export default function ProductionAdmin() {
     const today = startOfDay(new Date("2026-08-12")); // Using the current mock system date
 
     return allPrintJobs.map(job => {
-      const order = mockCustomerOrders.find(o => o.id === job.orderId)!;
+      const order = allCustomerOrders.find(o => o.id === job.orderId)!;
       const dueDate = parseISO(job.dueDate);
       const daysUntilDue = differenceInDays(dueDate, today);
 
@@ -46,7 +47,7 @@ export default function ProductionAdmin() {
         statusText
       };
     });
-  }, []);
+  }, [allPrintJobs, allCustomerOrders]);
 
   const filteredJobs = jobs.filter(job => {
     if (filter === "all") return true;
@@ -217,7 +218,6 @@ export default function ProductionAdmin() {
           order={selectedOrder} 
           onClose={() => setSelectedOrder(null)} 
           printJobs={allPrintJobs}
-          setPrintJobs={setAllPrintJobs}
         />
       )}
     </div>
@@ -229,13 +229,12 @@ function OrderDetailsModal({
   order, 
   onClose,
   printJobs,
-  setPrintJobs
 }: { 
   order: CustomerOrder, 
   onClose: () => void,
   printJobs: PrintJob[],
-  setPrintJobs: React.Dispatch<React.SetStateAction<PrintJob[]>>
 }) {
+  const { addPrintJob, updatePrintJob, deletePrintJob } = useERPStore();
   const [activeTab, setActiveTab] = useState<"resumen" | "editar" | "comentarios">("resumen");
   const [comments, setComments] = useState<{id: string, text: string, date: string, author: string}[]>([
     { id: '1', text: 'Pedido recibido correctamente. En espera de entrar a producción.', date: '2026-08-10 10:30', author: 'Sistema' }
@@ -259,7 +258,7 @@ function OrderDetailsModal({
   const estimatedHoursLeft = pendingJobs.reduce((acc, job) => acc + (job.estimatedHours || 0), 0);
 
   const handleDelete = (jobId: string) => {
-    setPrintJobs(prev => prev.filter(j => j.id !== jobId));
+    deletePrintJob(jobId);
   };
 
   const handleAddPiece = (e: React.FormEvent) => {
@@ -275,7 +274,7 @@ function OrderDetailsModal({
       estimatedHours: parseFloat(newPieceHours)
     };
     
-    setPrintJobs(prev => [...prev, newJob]);
+    addPrintJob(newJob);
     setNewPieceName("");
     setNewPieceHours("");
   };
@@ -288,16 +287,11 @@ function OrderDetailsModal({
   };
 
   const handleSaveEdit = (jobId: string) => {
-    setPrintJobs(prev => prev.map(job => 
-      job.id === jobId 
-        ? { 
-            ...job, 
-            productName: editPieceName, 
-            estimatedHours: parseFloat(editPieceHours) || 0,
-            status: editPieceStatus
-          } 
-        : job
-    ));
+    updatePrintJob(jobId, {
+      productName: editPieceName,
+      estimatedHours: parseFloat(editPieceHours) || 0,
+      status: editPieceStatus
+    });
     setEditingJobId(null);
   };
 

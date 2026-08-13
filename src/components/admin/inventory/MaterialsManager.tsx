@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Plus, Search, AlertTriangle, Layers, Edit2, Trash2, X, Save } from 'lucide-react';
-import { mockMaterials, type Material } from '../../../lib/mockData';
+import { useERPStore } from '../../../store/useERPStore';
+import { type Material } from '../../../lib/mockData';
 
 const MaterialsManager = () => {
-  const [materials, setMaterials] = useState<Material[]>(mockMaterials);
+  const { materials, addMaterial, updateMaterial, deleteMaterial } = useERPStore();
   const [searchTerm, setSearchTerm] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,20 +48,20 @@ const MaterialsManager = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingMaterial) {
-      setMaterials(prev => prev.map(m => m.id === editingMaterial.id ? { ...m, ...formData } : m));
+      updateMaterial(editingMaterial.id, formData);
     } else {
       const newMaterial: Material = {
         id: `mat${Date.now()}`,
         ...formData,
         costPerGram: 0.02 // Default or random
       };
-      setMaterials(prev => [...prev, newMaterial]);
+      addMaterial(newMaterial);
     }
     closeModal();
   };
 
   const handleDelete = (id: string) => {
-    setMaterials(prev => prev.filter(m => m.id !== id));
+    deleteMaterial(id);
   };
 
   const filteredMaterials = materials.filter(m => 

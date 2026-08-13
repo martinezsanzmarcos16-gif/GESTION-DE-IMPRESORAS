@@ -56,7 +56,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, 
       date: new Date().toISOString(),
       status,
       totalAmount: calculateTotal(),
-      items: items.length
+      items: items.length,
+      itemsList: items
     };
 
     onSubmit(newOrder);

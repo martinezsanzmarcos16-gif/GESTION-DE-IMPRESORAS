@@ -106,6 +106,14 @@ export const mockMaterials: Material[] = [
   { id: 'm4', type: 'PLA', color: 'Terracota', brand: 'SmartMaterials', quantityGrams: 150, minThreshold: 1000, costPerGram: 0.022 }, // Stock crítico
 ];
 
+export interface OrderItem {
+  id: string;
+  materialId: string | 'new';
+  description: string;
+  quantityGrams: number;
+  unitPrice: number;
+}
+
 export interface PurchaseOrder {
   id: string;
   supplier: string;
@@ -113,11 +121,12 @@ export interface PurchaseOrder {
   status: 'Pendiente' | 'Completado' | 'Pagado';
   totalAmount: number;
   items: number;
+  itemsList: OrderItem[];
 }
 
 export const mockPurchaseOrders: PurchaseOrder[] = [
-  { id: 'po1', supplier: 'Filament2Print', date: '2026-08-10', status: 'Completado', totalAmount: 150.50, items: 6 },
-  { id: 'po2', supplier: '3D Jake', date: '2026-08-12', status: 'Pendiente', totalAmount: 85.00, items: 3 },
+  { id: 'po1', supplier: 'Filament2Print', date: '2026-08-10', status: 'Completado', totalAmount: 150.50, items: 6, itemsList: [] },
+  { id: 'po2', supplier: '3D Jake', date: '2026-08-12', status: 'Pendiente', totalAmount: 85.00, items: 3, itemsList: [] },
 ];
 
 // Finanzas y Transacciones
