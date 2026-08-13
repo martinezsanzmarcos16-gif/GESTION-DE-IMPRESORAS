@@ -1,11 +1,12 @@
+import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Package, LayoutDashboard, Store, LogOut, Wallet, Calculator, Printer } from "lucide-react";
+import { Package, LayoutDashboard, Store, LogOut, Wallet, Calculator, Printer, Moon, Sun, Menu, X } from "lucide-react";
 import { useTheme } from "../theme-provider";
-import { Moon, Sun } from "lucide-react";
 
 export default function AdminLayout() {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -17,13 +18,24 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground transition-colors duration-300">
+    <div className="min-h-screen flex bg-background text-foreground transition-colors duration-300 relative">
+      {/* Overlay para móvil */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Elegante */}
-      <aside className="w-64 border-r border-border bg-card hidden md:flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-border">
+      <aside className={`fixed md:relative inset-y-0 left-0 z-50 w-64 border-r border-border bg-card flex flex-col transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
           <Link to="/" className="text-lg font-bold tracking-widest uppercase hover:text-accent transition-colors">
             Admin<span className="text-accent font-light">Panel</span>
           </Link>
+          <button className="md:hidden text-muted-foreground hover:text-foreground" onClick={() => setIsSidebarOpen(false)}>
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 py-6 px-4 space-y-2">
@@ -41,6 +53,7 @@ export default function AdminLayout() {
               <Link
                 key={item.name}
                 to={item.path}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   isActuallyActive
                     ? "bg-primary text-primary-foreground"
@@ -63,10 +76,18 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Header Mobile / Acciones */}
-        <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-6 z-10 sticky top-0">
-          <h2 className="font-medium text-lg">Panel de Control</h2>
+        <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 z-10 sticky top-0 shrink-0">
+          <div className="flex items-center gap-3">
+            <button 
+              className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={20} />
+            </button>
+            <h2 className="font-medium text-lg hidden sm:block">Panel de Control</h2>
+          </div>
           <div className="flex items-center gap-4">
              <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}

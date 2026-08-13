@@ -34,12 +34,12 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-16">
-      <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+    <div className="container mx-auto px-4 py-6 md:py-16">
+      <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 md:mb-8">
         <ChevronLeft size={16} /> Volver al catálogo
       </Link>
 
-      <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-24">
         {/* Image Gallery (Simplified for now) */}
         <div className="w-full md:w-1/2">
           <div className="aspect-square bg-secondary rounded-2xl overflow-hidden shadow-sm">
@@ -53,10 +53,10 @@ export default function ProductDetail() {
 
         {/* Product Info */}
         <div className="w-full md:w-1/2 flex flex-col justify-center">
-          <div className="mb-2 text-sm text-muted-foreground uppercase tracking-widest">
+          <div className="mb-2 text-xs md:text-sm text-muted-foreground uppercase tracking-widest">
             {product.category}
           </div>
-          <h1 className="text-3xl md:text-5xl font-light mb-4">{product.name}</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-light mb-3 md:mb-4">{product.name}</h1>
           <p className="text-xl font-medium mb-8">€{product.price.toFixed(2)}</p>
           
           <div className="prose prose-sm dark:prose-invert text-muted-foreground mb-8">

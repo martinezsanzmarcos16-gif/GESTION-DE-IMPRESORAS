@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Moon, Sun, ShoppingCart, Menu } from "lucide-react";
+import { Moon, Sun, ShoppingCart, Menu, X } from "lucide-react";
 import { useTheme } from "../theme-provider";
 import { useCartStore } from "../../store/useCartStore";
 import CartDrawer from "../store/CartDrawer";
@@ -8,6 +9,7 @@ export default function StoreLayout() {
   const { theme, setTheme } = useTheme();
   const { toggleDrawer, getTotalItems } = useCartStore();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const isCheckout = location.pathname === '/checkout';
 
@@ -17,8 +19,11 @@ export default function StoreLayout() {
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button className="md:hidden p-2 text-muted-foreground hover:text-foreground">
-              <Menu size={20} />
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <Link to="/" className="text-xl font-bold tracking-widest uppercase">
               Lumina<span className="text-accent font-light">3D</span>
@@ -57,6 +62,35 @@ export default function StoreLayout() {
 
       {/* Cart Drawer */}
       <CartDrawer />
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-b border-border bg-card shadow-lg animate-in slide-in-from-top-2">
+          <nav className="flex flex-col p-4 gap-4">
+            <Link 
+              to="/" 
+              className="px-4 py-3 rounded-md hover:bg-secondary transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Catálogo
+            </Link>
+            <Link 
+              to="/about" 
+              className="px-4 py-3 rounded-md hover:bg-secondary transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Nosotros
+            </Link>
+            <Link 
+              to="/admin" 
+              className="px-4 py-3 rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Admin
+            </Link>
+          </nav>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1">

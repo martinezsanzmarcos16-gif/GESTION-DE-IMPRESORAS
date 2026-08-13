@@ -140,15 +140,15 @@ export default function Checkout() {
   const total = subtotal + shipping;
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
-      <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+    <div className="container mx-auto px-4 py-6 md:py-12 max-w-6xl">
+      <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 md:mb-8">
         <ChevronLeft size={16} /> Volver a la tienda
       </Link>
 
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Form Area */}
         <div className="w-full lg:w-3/5">
-          <h1 className="text-2xl font-light mb-8">Checkout</h1>
+          <h1 className="text-2xl font-light mb-6 md:mb-8">Checkout</h1>
           
           {/* Notification Toast */}
           {notification && (
@@ -166,7 +166,7 @@ export default function Checkout() {
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
             {/* Contact Info */}
             <div>
               <h2 className="text-lg font-medium mb-4">Información de Contacto</h2>
