@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, Calendar, CheckCircle, Clock, CreditCard, Mail, Loader2, Check } from 'lucide-react';
+import { ShoppingCart, Calendar, CheckCircle, Clock, Mail, Loader2, Check } from 'lucide-react';
 import { type PurchaseOrder } from '../../../lib/mockData';
 import { useERPStore } from '../../../store/useERPStore';
 import PurchaseOrderForm from './PurchaseOrderForm';

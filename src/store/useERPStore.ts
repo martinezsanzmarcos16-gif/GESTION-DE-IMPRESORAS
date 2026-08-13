@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { 
-  mockMaterials, Material, 
-  mockPurchaseOrders, PurchaseOrder, OrderItem,
-  mockTransactions, Transaction,
-  mockCustomerOrders, CustomerOrder,
-  mockPrintJobs, PrintJob
+  mockMaterials, type Material, 
+  mockPurchaseOrders, type PurchaseOrder,
+  mockTransactions, type Transaction,
+  mockCustomerOrders, type CustomerOrder,
+  mockPrintJobs, type PrintJob
 } from '../lib/mockData';
 
 interface ERPState {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CheckCircle2, Loader2, Check, Mail } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, Loader2, Check } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 import { useERPStore } from '../../store/useERPStore';
 import { type CustomerOrder, type PrintJob, type Transaction } from '../../lib/mockData';

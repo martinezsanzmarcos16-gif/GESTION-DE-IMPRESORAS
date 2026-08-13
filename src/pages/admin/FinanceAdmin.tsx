@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Wallet, Search } from 'lucide-react';
-import { type Transaction } from '../../lib/mockData';
+
 import { useERPStore } from '../../store/useERPStore';
 
 // Chart colors
