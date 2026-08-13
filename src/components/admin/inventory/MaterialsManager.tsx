@@ -52,7 +52,7 @@ const MaterialsManager = () => {
       const newMaterial: Material = {
         id: `mat${Date.now()}`,
         ...formData,
-        pricePerGram: 0.02 // Default or random
+        costPerGram: 0.02 // Default or random
       };
       setMaterials(prev => [...prev, newMaterial]);
     }

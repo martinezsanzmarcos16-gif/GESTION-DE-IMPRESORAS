@@ -46,7 +46,8 @@ const PrintersManager = () => {
     } else {
       const newPrinter: Printer = {
         id: `pr${Date.now()}`,
-        ...formData
+        ...formData,
+        powerWatts: 0 // Default value
       };
       setPrinters(prev => [...prev, newPrinter]);
     }
