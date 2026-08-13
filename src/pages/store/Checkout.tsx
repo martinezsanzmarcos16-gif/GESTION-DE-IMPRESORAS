@@ -4,10 +4,12 @@ import { ChevronLeft, CheckCircle2, Loader2, Check } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
 import { useERPStore } from '../../store/useERPStore';
 import { type CustomerOrder, type PrintJob, type Transaction } from '../../lib/mockData';
+import { useProductStore } from '../../store/useProductStore';
 
 export default function Checkout() {
   const { items, getTotalPrice, clearCart } = useCartStore();
   const { addCustomerOrder, addPrintJob, addTransaction } = useERPStore();
+  const { updateProduct, products } = useProductStore();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,8 +30,11 @@ export default function Checkout() {
     const email = (document.getElementById('email') as HTMLInputElement)?.value || 'cliente@email.com';
     const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value || 'Cliente';
     const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value || '';
+    const address = (document.getElementById('address') as HTMLInputElement)?.value || '';
+    const city = (document.getElementById('city') as HTMLInputElement)?.value || '';
+    const zipCode = (document.getElementById('zipCode') as HTMLInputElement)?.value || '';
     
-    setNotification({ message: `Procesando pago y enviando correo de confirmación a ${email}...`, type: 'info' });
+    setNotification({ message: `Procesando pago y preparando correo para ${email}...`, type: 'info' });
     
     // Simulate API call
     setTimeout(() => {
@@ -69,7 +74,37 @@ export default function Checkout() {
       };
       addTransaction(newTransaction);
 
-      setNotification({ message: `¡Pago completado! Correo enviado con éxito a ${email}.`, type: 'success' });
+      // 4. Update Product Stock
+      items.forEach(item => {
+        const product = products.find(p => p.id === item.product.id);
+        if (product) {
+          updateProduct(product.id, {
+            stock: Math.max(0, product.stock - item.quantity)
+          });
+        }
+      });
+
+      // 5. Send Real Email Notification via API (Resend)
+      const emailSubject = `Confirmación de Pedido ${orderId}`;
+      let emailHtml = `<h2>Hola ${firstName},</h2><p>Gracias por tu compra. Tu pedido <strong>${orderId}</strong> ha sido confirmado.</p><h3>Resumen del pedido:</h3><ul>`;
+      items.forEach(item => {
+        emailHtml += `<li>${item.quantity}x ${item.product.name} (&euro;${(item.product.price * item.quantity).toFixed(2)})</li>`;
+      });
+      emailHtml += `</ul><p><strong>Subtotal:</strong> &euro;${getTotalPrice().toFixed(2)}<br/><strong>Envío:</strong> &euro;4.99<br/><strong>Total:</strong> &euro;${(getTotalPrice() + 4.99).toFixed(2)}</p><h3>Dirección de envío:</h3><p>${address}<br/>${city}, ${zipCode}</p><p>Gracias,<br/>El equipo de la Tienda.</p>`;
+      
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: email,
+          subject: emailSubject,
+          html: emailHtml
+        })
+      }).then(res => {
+        if (!res.ok) console.error("Error sending email", res);
+      }).catch(err => console.error("Fetch error", err));
+
+      setNotification({ message: `¡Pago completado! Correo de confirmación enviado.`, type: 'success' });
 
       setTimeout(() => {
         setIsSubmitting(false);
