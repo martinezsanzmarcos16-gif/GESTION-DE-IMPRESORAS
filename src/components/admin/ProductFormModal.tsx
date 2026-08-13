@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { type Product, type ProductCategory, type ProductStatus } from '../../lib/types';
+import { type Product } from '../../lib/mockData';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -12,13 +12,13 @@ interface ProductFormModalProps {
 
 export default function ProductFormModal({ isOpen, onClose, product, initialData, onSave }: ProductFormModalProps) {
   const [formData, setFormData] = useState<Partial<Product>>({
-    title: '',
+    name: '',
     description: '',
     price: 0,
-    stock_quantity: 0,
-    images: [''],
-    category: 'Lámparas',
-    status: 'activo',
+    stock: 0,
+    imageUrl: '',
+    category: 'lamp',
+    isVisible: true,
   });
 
   useEffect(() => {
@@ -26,13 +26,13 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
       setFormData(product);
     } else {
       setFormData({
-        title: '',
+        name: '',
         description: '',
         price: 0,
-        stock_quantity: 0,
-        images: [''],
-        category: 'Lámparas',
-        status: 'activo',
+        stock: 0,
+        imageUrl: '',
+        category: 'lamp',
+        isVisible: true,
         ...initialData,
       });
     }
@@ -43,19 +43,11 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    if (name === 'images') {
-      setFormData(prev => ({ ...prev, images: [value] }));
-      return;
-    }
-
-    if (name === 'isVisible') {
-      setFormData(prev => ({ ...prev, status: (e.target as HTMLInputElement).checked ? 'activo' : 'borrador' }));
-      return;
-    }
-
     let parsedValue: string | number | boolean = value;
     if (type === 'number') {
       parsedValue = parseFloat(value);
+    } else if (type === 'checkbox') {
+      parsedValue = (e.target as HTMLInputElement).checked;
     }
 
     setFormData(prev => ({ ...prev, [name]: parsedValue }));
@@ -65,9 +57,6 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
     e.preventDefault();
     onSave(formData);
   };
-
-  const isVisible = formData.status === 'activo';
-  const imageUrl = formData.images && formData.images.length > 0 ? formData.images[0] : '';
 
   return (
     <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -86,12 +75,12 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-1">Nombre del Producto</label>
+              <label htmlFor="name" className="block text-sm font-medium text-muted-foreground mb-1">Nombre del Producto</label>
               <input 
                 type="text" 
-                id="title" 
-                name="title" 
-                value={formData.title} 
+                id="name" 
+                name="name" 
+                value={formData.name} 
                 onChange={handleChange}
                 required 
                 className="w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" 
@@ -103,7 +92,7 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
               <textarea 
                 id="description" 
                 name="description" 
-                value={formData.description || ''} 
+                value={formData.description} 
                 onChange={handleChange}
                 required 
                 rows={4}
@@ -127,12 +116,12 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
             </div>
 
             <div>
-              <label htmlFor="stock_quantity" className="block text-sm font-medium text-muted-foreground mb-1">Stock</label>
+              <label htmlFor="stock" className="block text-sm font-medium text-muted-foreground mb-1">Stock</label>
               <input 
                 type="number" 
-                id="stock_quantity" 
-                name="stock_quantity" 
-                value={formData.stock_quantity} 
+                id="stock" 
+                name="stock" 
+                value={formData.stock} 
                 onChange={handleChange}
                 required 
                 min="0"
@@ -145,22 +134,22 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
               <select 
                 id="category" 
                 name="category" 
-                value={formData.category || 'Lámparas'} 
+                value={formData.category} 
                 onChange={handleChange}
                 className="w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               >
-                <option value="Lámparas">Lámpara</option>
-                <option value="Objetos Decorativos">Objeto Decorativo</option>
+                <option value="lamp">Lámpara</option>
+                <option value="object">Objeto / Varios</option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="images" className="block text-sm font-medium text-muted-foreground mb-1">URL de Imagen</label>
+              <label htmlFor="imageUrl" className="block text-sm font-medium text-muted-foreground mb-1">URL de Imagen</label>
               <input 
                 type="url" 
-                id="images" 
-                name="images" 
-                value={imageUrl} 
+                id="imageUrl" 
+                name="imageUrl" 
+                value={formData.imageUrl} 
                 onChange={handleChange}
                 required 
                 placeholder="https://..."
@@ -173,7 +162,7 @@ export default function ProductFormModal({ isOpen, onClose, product, initialData
                 <input 
                   type="checkbox" 
                   name="isVisible" 
-                  checked={isVisible} 
+                  checked={formData.isVisible} 
                   onChange={handleChange}
                   className="sr-only peer"
                 />

@@ -1,99 +1,44 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabase';
-import { type Product, type ProductCategory, type ProductStatus } from '../lib/types';
+import { persist } from 'zustand/middleware';
+import { mockProducts, type Product } from '../lib/mockData';
 
 interface ProductState {
   products: Product[];
-  isLoading: boolean;
-  error: string | null;
-  fetchProducts: () => Promise<void>;
-  addProduct: (productData: Omit<Product, 'id' | 'created_at'>) => Promise<void>;
-  updateProduct: (id: string, data: Partial<Product>) => Promise<void>;
-  toggleVisibility: (id: string, currentStatus: ProductStatus) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
+  addProduct: (product: Product) => void;
+  updateProduct: (id: string, data: Partial<Product>) => void;
+  toggleVisibility: (id: string) => void;
+  deleteProduct: (id: string) => void;
 }
 
-export const useProductStore = create<ProductState>((set, get) => ({
-  products: [],
-  isLoading: false,
-  error: null,
+export const useProductStore = create<ProductState>()(
+  persist(
+    (set) => ({
+      products: mockProducts, // Initialize with mock data
 
-  fetchProducts: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+      addProduct: (product) => 
+        set((state) => ({ products: [...state.products, product] })),
 
-      if (error) throw error;
-      set({ products: data as Product[], isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
+      updateProduct: (id, data) =>
+        set((state) => ({
+          products: state.products.map((p) =>
+            p.id === id ? { ...p, ...data } : p
+          ),
+        })),
+
+      toggleVisibility: (id) =>
+        set((state) => ({
+          products: state.products.map((p) =>
+            p.id === id ? { ...p, isVisible: !p.isVisible } : p
+          ),
+        })),
+
+      deleteProduct: (id) =>
+        set((state) => ({
+          products: state.products.filter((p) => p.id !== id),
+        })),
+    }),
+    {
+      name: 'product-store', // key in localStorage
     }
-  },
-
-  addProduct: async (productData) => {
-    set({ isLoading: true, error: null });
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .insert([productData])
-        .select()
-        .single();
-
-      if (error) throw error;
-      set((state) => ({ 
-        products: [data as Product, ...state.products],
-        isLoading: false
-      }));
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
-    }
-  },
-
-  updateProduct: async (id, data) => {
-    set({ isLoading: true, error: null });
-    try {
-      const { data: updatedData, error } = await supabase
-        .from('products')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      set((state) => ({
-        products: state.products.map((p) =>
-          p.id === id ? (updatedData as Product) : p
-        ),
-        isLoading: false
-      }));
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
-    }
-  },
-
-  toggleVisibility: async (id, currentStatus) => {
-    const newStatus = currentStatus === 'activo' ? 'borrador' : 'activo';
-    return get().updateProduct(id, { status: newStatus });
-  },
-
-  deleteProduct: async (id) => {
-    set({ isLoading: true, error: null });
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      set((state) => ({
-        products: state.products.filter((p) => p.id !== id),
-        isLoading: false
-      }));
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
-    }
-  }
-}));
+  )
+);

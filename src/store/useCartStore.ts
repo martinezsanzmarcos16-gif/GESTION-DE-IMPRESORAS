@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { type Product } from '../lib/types';
+import { type Product } from '../lib/mockData';
 
 export interface CartItem {
   product: Product;

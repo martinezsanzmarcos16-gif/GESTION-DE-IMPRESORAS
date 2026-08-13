@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { useCartStore } from '../../store/useCartStore';
-import { supabase } from '../../lib/supabase';
 
 export default function Checkout() {
   const { items, getTotalPrice, clearCart } = useCartStore();
@@ -17,55 +16,16 @@ export default function Checkout() {
     }
   }, [items.length, isSuccess, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    try {
-      // 1. Crear el pedido principal
-      const orderData = {
-        customer_name: (document.getElementById('firstName') as HTMLInputElement).value + ' ' + (document.getElementById('lastName') as HTMLInputElement).value,
-        customer_email: (document.getElementById('email') as HTMLInputElement).value,
-        customer_address: (document.getElementById('address') as HTMLInputElement).value + ', ' + (document.getElementById('city') as HTMLInputElement).value + ', ' + (document.getElementById('zipCode') as HTMLInputElement).value,
-        payment_status: 'Pagado', // Simulating successful payment
-        total_amount: getTotalPrice() + 4.99 // subtotal + shipping
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert([orderData])
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // 2. Crear las líneas de pedido y descontar stock (esto normalmente se hace en backend, pero lo simulamos aquí)
-      for (const item of items) {
-        // Insert order item
-        await supabase
-          .from('order_items')
-          .insert([{
-            order_id: order.id,
-            product_id: item.product.id,
-            quantity: item.quantity,
-            unit_price: item.product.price
-          }]);
-          
-        // Update product stock (since we are doing it from frontend for now)
-        await supabase
-          .from('products')
-          .update({ stock_quantity: item.product.stock_quantity - item.quantity })
-          .eq('id', item.product.id);
-      }
-
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
       setIsSuccess(true);
       clearCart();
-    } catch (error) {
-      console.error('Error al procesar el pedido:', error);
-      alert('Hubo un error al procesar el pedido.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, 1500);
   };
 
   if (isSuccess) {
@@ -166,29 +126,23 @@ export default function Checkout() {
             <h2 className="text-lg font-medium mb-6">Resumen del Pedido</h2>
             
             <div className="space-y-4 mb-6">
-              {items.map((item) => {
-                const imageUrl = item.product.images && item.product.images.length > 0 
-                  ? item.product.images[0] 
-                  : 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800&auto=format&fit=crop';
-                  
-                return (
-                  <div key={item.product.id} className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-secondary rounded-md overflow-hidden flex-shrink-0 relative">
-                      <img src={imageUrl} alt={item.product.title} className="w-full h-full object-cover" />
-                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-foreground text-background text-xs rounded-full flex items-center justify-center font-medium">
-                        {item.quantity}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium">{item.product.title}</h4>
-                      <p className="text-xs text-muted-foreground capitalize">{item.product.category}</p>
-                    </div>
-                    <span className="text-sm font-medium">
-                      €{(item.product.price * item.quantity).toFixed(2)}
+              {items.map((item) => (
+                <div key={item.product.id} className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-secondary rounded-md overflow-hidden flex-shrink-0 relative">
+                    <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-foreground text-background text-xs rounded-full flex items-center justify-center font-medium">
+                      {item.quantity}
                     </span>
                   </div>
-                );
-              })}
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium">{item.product.name}</h4>
+                    <p className="text-xs text-muted-foreground capitalize">{item.product.category}</p>
+                  </div>
+                  <span className="text-sm font-medium">
+                    €{(item.product.price * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
             </div>
 
             <div className="border-t border-border pt-4 space-y-3 text-sm">

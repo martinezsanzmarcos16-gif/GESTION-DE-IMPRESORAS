@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Minus, Plus, ShoppingBag, Loader2 } from 'lucide-react';
+import { ChevronLeft, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useProductStore } from '../../store/useProductStore';
 import { useCartStore } from '../../store/useCartStore';
 
@@ -8,28 +8,15 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+  const products = useProductStore((state) => state.products);
   
-  const { products, fetchProducts, isLoading } = useProductStore();
-  
-  useEffect(() => {
-    // Si entramos directamente por URL y no hay productos, intentamos cargarlos
-    if (products.length === 0) {
-      fetchProducts();
-    }
-    // Scroll to top on mount
-    window.scrollTo(0, 0);
-  }, [id, products.length, fetchProducts]);
-
   // Find product
   const product = products.find(p => p.id === id);
 
-  if (isLoading && !product) {
-    return (
-      <div className="container mx-auto px-4 py-32 flex justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    // Scroll to top on mount
+    window.scrollTo(0, 0);
+  }, [id]);
 
   if (!product) {
     return (
@@ -43,12 +30,8 @@ export default function ProductDetail() {
   }
 
   const handleAddToCart = () => {
-    addItem(product as any, quantity); // temporary cast until cart store is updated
+    addItem(product, quantity);
   };
-
-  const imageUrl = product.images && product.images.length > 0 
-    ? product.images[0] 
-    : 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800&auto=format&fit=crop';
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16">
@@ -57,12 +40,12 @@ export default function ProductDetail() {
       </Link>
 
       <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
-        {/* Image Gallery */}
+        {/* Image Gallery (Simplified for now) */}
         <div className="w-full md:w-1/2">
           <div className="aspect-square bg-secondary rounded-2xl overflow-hidden shadow-sm">
             <img 
-              src={imageUrl} 
-              alt={product.title} 
+              src={product.imageUrl} 
+              alt={product.name} 
               className="w-full h-full object-cover"
             />
           </div>
@@ -73,7 +56,7 @@ export default function ProductDetail() {
           <div className="mb-2 text-sm text-muted-foreground uppercase tracking-widest">
             {product.category}
           </div>
-          <h1 className="text-3xl md:text-5xl font-light mb-4">{product.title}</h1>
+          <h1 className="text-3xl md:text-5xl font-light mb-4">{product.name}</h1>
           <p className="text-xl font-medium mb-8">€{product.price.toFixed(2)}</p>
           
           <div className="prose prose-sm dark:prose-invert text-muted-foreground mb-8">
@@ -87,7 +70,7 @@ export default function ProductDetail() {
 
           <div className="h-px w-full bg-border mb-8" />
 
-          {product.stock_quantity > 0 ? (
+          {product.stock > 0 ? (
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex items-center border border-border rounded-md px-2 w-32 h-14 bg-background">
                 <button 
@@ -98,7 +81,7 @@ export default function ProductDetail() {
                 </button>
                 <span className="flex-1 text-center font-medium">{quantity}</span>
                 <button 
-                  onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                   className="p-2 hover:bg-secondary rounded transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <Plus size={18} />
@@ -117,9 +100,9 @@ export default function ProductDetail() {
             </div>
           )}
           
-          {product.stock_quantity > 0 && product.stock_quantity <= 5 && (
+          {product.stock > 0 && product.stock <= 5 && (
             <p className="text-sm text-amber-600 dark:text-amber-400 mt-4">
-              ¡Solo quedan {product.stock_quantity} unidades en stock!
+              ¡Solo quedan {product.stock} unidades en stock!
             </p>
           )}
         </div>

@@ -1,17 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ProductCard from '../../components/store/ProductCard';
 import { useProductStore } from '../../store/useProductStore';
-import { Filter, Loader2 } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 export default function Catalog() {
-  const [filter, setFilter] = useState<"all" | "Lámparas" | "Objetos Decorativos">("all");
-  const { products, fetchProducts, isLoading } = useProductStore();
+  const [filter, setFilter] = useState<"all" | "lamp" | "object">("all");
+  const products = useProductStore((state) => state.products);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  const visibleProducts = products.filter(p => p.status === 'activo');
+  const visibleProducts = products.filter(p => p.isVisible);
   const filteredProducts = filter === "all" 
     ? visibleProducts 
     : visibleProducts.filter(p => p.category === filter);
@@ -44,38 +40,30 @@ export default function Catalog() {
             Todo
           </button>
           <button 
-            onClick={() => setFilter("Lámparas")}
-            className={`transition-colors ${filter === "Lámparas" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setFilter("lamp")}
+            className={`transition-colors ${filter === "lamp" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
           >
             Lámparas
           </button>
           <button 
-            onClick={() => setFilter("Objetos Decorativos")}
-            className={`transition-colors ${filter === "Objetos Decorativos" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setFilter("object")}
+            className={`transition-colors ${filter === "object" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
           >
             Objetos
           </button>
         </div>
       </div>
 
-      {isLoading && products.length === 0 ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
+        {filteredProducts.map(product => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+      
+      {filteredProducts.length === 0 && (
+        <div className="py-20 text-center text-muted-foreground">
+          No se encontraron productos en esta categoría.
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-          
-          {filteredProducts.length === 0 && (
-            <div className="py-20 text-center text-muted-foreground">
-              No se encontraron productos en esta categoría.
-            </div>
-          )}
-        </>
       )}
     </div>
   );

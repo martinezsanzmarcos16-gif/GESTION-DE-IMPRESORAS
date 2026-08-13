@@ -1,39 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, CheckCircle, Loader2 } from 'lucide-react';
-import { type Material, type PurchaseStatus } from '../../../lib/types';
-import { supabase } from '../../../lib/supabase';
+import React, { useState } from 'react';
+import { X, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { mockMaterials, type PurchaseOrder } from '../../../lib/mockData';
 
 interface PurchaseOrderFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: (order: PurchaseOrder) => void;
 }
 
 interface OrderItem {
   id: string;
   materialId: string | 'new';
-  description: string;
+  description: string; // If 'new' or generic
   quantityGrams: number;
   unitPrice: number;
 }
 
 const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, onSubmit }) => {
-  const [supplierName, setSupplierName] = useState('');
+  const [supplier, setSupplier] = useState('');
   const [items, setItems] = useState<OrderItem[]>([
     { id: '1', materialId: '', description: '', quantityGrams: 1000, unitPrice: 0 }
   ]);
-  const [status, setStatus] = useState<PurchaseStatus>('Completado');
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Fetch existing materials
-      supabase.from('materials').select('*').then(({ data }) => {
-        if (data) setMaterials(data);
-      });
-    }
-  }, [isOpen]);
+  const [status, setStatus] = useState<'Pendiente' | 'Completado'>('Completado');
 
   if (!isOpen) return null;
 
@@ -51,88 +39,27 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, 
 
   const calculateTotal = () => {
     return items.reduce((total, item) => total + (item.unitPrice), 0); 
+    // Simplified: assuming unitPrice is the price for the whole quantity indicated, or we could do price per kg. Let's assume unitPrice is the line total for simplicity in this form.
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supplierName || items.length === 0) return;
+    
+    if (!supplier || items.length === 0) return;
 
-    setIsSubmitting(true);
-    try {
-      // 1. Insert or find supplier (simplified: just inserting for now)
-      const { data: supplier, error: supError } = await supabase
-        .from('suppliers')
-        .insert([{ name: supplierName }])
-        .select()
-        .single();
-      
-      if (supError) throw supError;
+    // TODO: In a real app, here we would update the actual material stock in the DB
+    // if materialId !== 'new' and status === 'Completado'.
 
-      // 2. Create Purchase Order
-      const { data: order, error: ordError } = await supabase
-        .from('purchase_orders')
-        .insert([{ 
-          supplier_id: supplier.id,
-          status,
-          total_amount: calculateTotal()
-        }])
-        .select()
-        .single();
-        
-      if (ordError) throw ordError;
+    const newOrder: PurchaseOrder = {
+      id: `po-${Date.now()}`,
+      supplier,
+      date: new Date().toISOString(),
+      status,
+      totalAmount: calculateTotal(),
+      items: items.length
+    };
 
-      // 3. Process items and update stock if completed
-      for (const item of items) {
-        let finalMaterialId = item.materialId;
-
-        // If it's a new material, insert it
-        if (item.materialId === 'new') {
-          const { data: newMat, error: matError } = await supabase
-            .from('materials')
-            .insert([{
-              material_type: 'Otro', // default fallback
-              color: item.description,
-              quantity_grams: status === 'Completado' ? item.quantityGrams : 0
-            }])
-            .select()
-            .single();
-          
-          if (matError) throw matError;
-          finalMaterialId = newMat.id;
-        } else if (status === 'Completado') {
-          // If existing material and status completed, add to stock
-          const mat = materials.find(m => m.id === finalMaterialId);
-          if (mat) {
-            await supabase
-              .from('materials')
-              .update({ quantity_grams: Number(mat.quantity_grams) + item.quantityGrams })
-              .eq('id', finalMaterialId);
-          }
-        }
-
-        // Create PO item
-        await supabase
-          .from('purchase_order_items')
-          .insert([{
-            purchase_order_id: order.id,
-            material_id: finalMaterialId,
-            description: item.description,
-            quantity: item.quantityGrams,
-            unit_price: item.unitPrice
-          }]);
-      }
-
-      onSubmit();
-      // Reset form
-      setSupplierName('');
-      setItems([{ id: '1', materialId: '', description: '', quantityGrams: 1000, unitPrice: 0 }]);
-      
-    } catch (error) {
-      console.error('Error creating purchase order:', error);
-      alert('Hubo un error al crear el pedido.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(newOrder);
   };
 
   return (
@@ -158,8 +85,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, 
                 <input 
                   type="text" 
                   required
-                  value={supplierName}
-                  onChange={(e) => setSupplierName(e.target.value)}
+                  value={supplier}
+                  onChange={(e) => setSupplier(e.target.value)}
                   placeholder="Ej. Filament2Print, Amazon..."
                   className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
@@ -168,7 +95,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, 
                 <label className="text-sm font-medium">Estado del Pedido</label>
                 <select 
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as PurchaseStatus)}
+                  onChange={(e) => setStatus(e.target.value as 'Pendiente' | 'Completado')}
                   className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="Pendiente">Pendiente (Borrador)</option>
@@ -209,9 +136,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, 
                         <option value="" disabled>Selecciona un material...</option>
                         <option value="new">+ Crear nuevo material</option>
                         <optgroup label="Materiales Existentes">
-                          {materials.map(m => (
+                          {mockMaterials.map(m => (
                             <option key={m.id} value={m.id}>
-                              {m.material_type} - {m.color} ({m.brand})
+                              {m.type} - {m.color} ({m.brand})
                             </option>
                           ))}
                         </optgroup>
@@ -282,17 +209,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ isOpen, onClose, 
             type="button"
             onClick={onClose}
             className="px-4 py-2 border border-border rounded-md font-medium hover:bg-secondary transition-colors text-sm"
-            disabled={isSubmitting}
           >
             Cancelar
           </button>
           <button 
             type="submit"
             form="purchase-order-form"
-            disabled={isSubmitting}
-            className="bg-primary text-primary-foreground px-6 py-2 rounded-md font-medium hover:opacity-90 transition-opacity text-sm flex items-center gap-2 disabled:opacity-50"
+            className="bg-primary text-primary-foreground px-6 py-2 rounded-md font-medium hover:opacity-90 transition-opacity text-sm flex items-center gap-2"
           >
-            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Confirmar Pedido
           </button>
         </div>

@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Package, LayoutDashboard, Store, LogOut, Wallet, Calculator } from "lucide-react";
+import { Package, LayoutDashboard, Store, LogOut, Wallet, Calculator, Printer } from "lucide-react";
 import { useTheme } from "../theme-provider";
 import { Moon, Sun } from "lucide-react";
 
@@ -13,6 +13,7 @@ export default function AdminLayout() {
     { name: "Almacén & Stock", path: "/admin/inventory", icon: Package },
     { name: "Cuentas & Finanzas", path: "/admin/finance", icon: Wallet },
     { name: "Calculadora Costes", path: "/admin/calculator", icon: Calculator },
+    { name: "Cola de Impresión", path: "/admin/production", icon: Printer },
   ];
 
   return (

@@ -11,6 +11,7 @@ import ProductsAdmin from "./pages/admin/ProductsAdmin";
 import InventoryAdmin from "./pages/admin/InventoryAdmin";
 import FinanceAdmin from "./pages/admin/FinanceAdmin";
 import CalculatorAdmin from "./pages/admin/CalculatorAdmin";
+import ProductionAdmin from "./pages/admin/ProductionAdmin";
 
 // Vistas Placeholder para Admin
 const AdminDashboard = () => (
@@ -53,6 +54,7 @@ function App() {
             <Route path="inventory" element={<InventoryAdmin />} />
             <Route path="finance" element={<FinanceAdmin />} />
             <Route path="calculator" element={<CalculatorAdmin />} />
+            <Route path="production" element={<ProductionAdmin />} />
           </Route>
         </Routes>
       </BrowserRouter>

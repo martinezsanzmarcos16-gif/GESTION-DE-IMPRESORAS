@@ -1,3 +1,4 @@
+
 import { useCartStore } from '../../store/useCartStore';
 import { X as XIcon, Plus as PlusIcon, Minus as MinusIcon, ShoppingBag as ShoppingBagIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -42,56 +43,50 @@ export default function CartDrawer() {
               </button>
             </div>
           ) : (
-            items.map((item) => {
-              const imageUrl = item.product.images && item.product.images.length > 0 
-                ? item.product.images[0] 
-                : 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800&auto=format&fit=crop';
-                
-              return (
-                <div key={item.product.id} className="flex gap-4">
-                  <div className="w-20 h-20 bg-secondary rounded-md overflow-hidden flex-shrink-0">
-                    <img src={imageUrl} alt={item.product.title} className="w-full h-full object-cover" />
+            items.map((item) => (
+              <div key={item.product.id} className="flex gap-4">
+                <div className="w-20 h-20 bg-secondary rounded-md overflow-hidden flex-shrink-0">
+                  <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-medium text-sm">{item.product.name}</h3>
+                      <button 
+                        onClick={() => removeItem(item.product.id)}
+                        className="text-muted-foreground hover:text-red-500 transition-colors"
+                      >
+                        <XIcon size={16} />
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">{item.product.category}</p>
                   </div>
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium text-sm">{item.product.title}</h3>
-                        <button 
-                          onClick={() => removeItem(item.product.id)}
-                          className="text-muted-foreground hover:text-red-500 transition-colors"
-                        >
-                          <XIcon size={16} />
-                        </button>
-                      </div>
-                      <p className="text-xs text-muted-foreground capitalize">{item.product.category}</p>
+                  
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex items-center border border-border rounded-md">
+                      <button 
+                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        className="px-2 py-1 hover:bg-secondary transition-colors"
+                        disabled={item.quantity <= 1}
+                      >
+                        <MinusIcon size={14} />
+                      </button>
+                      <span className="text-sm px-2 w-8 text-center">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        className="px-2 py-1 hover:bg-secondary transition-colors"
+                        disabled={item.quantity >= item.product.stock}
+                      >
+                        <PlusIcon size={14} />
+                      </button>
                     </div>
-                    
-                    <div className="flex justify-between items-center mt-2">
-                      <div className="flex items-center border border-border rounded-md">
-                        <button 
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="px-2 py-1 hover:bg-secondary transition-colors"
-                          disabled={item.quantity <= 1}
-                        >
-                          <MinusIcon size={14} />
-                        </button>
-                        <span className="text-sm px-2 w-8 text-center">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="px-2 py-1 hover:bg-secondary transition-colors"
-                          disabled={item.quantity >= item.product.stock_quantity}
-                        >
-                          <PlusIcon size={14} />
-                        </button>
-                      </div>
-                      <span className="font-medium text-sm">
-                        €{(item.product.price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
+                    <span className="font-medium text-sm">
+                      €{(item.product.price * item.quantity).toFixed(2)}
+                    </span>
                   </div>
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
 

@@ -1,20 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calculator, Printer as PrinterIcon, Package, Euro, Clock, Zap, Settings, ArrowRight, Lightbulb, Loader2 } from "lucide-react";
+import { mockPrinters, mockMaterials } from "../../lib/mockData";
+import { Calculator, Printer, Package, Euro, Clock, Zap, Settings, ArrowRight, Lightbulb } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { supabase } from "../../lib/supabase";
-import { type Printer, type Material } from "../../lib/types";
 
 export default function CalculatorAdmin() {
   const navigate = useNavigate();
 
-  const [printers, setPrinters] = useState<Printer[]>([]);
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   // Estado del formulario
-  const [selectedPrinterId, setSelectedPrinterId] = useState("");
-  const [selectedMaterialId, setSelectedMaterialId] = useState("");
+  const [selectedPrinterId, setSelectedPrinterId] = useState(mockPrinters[0]?.id || "");
+  const [selectedMaterialId, setSelectedMaterialId] = useState(mockMaterials[0]?.id || "");
   const [printHours, setPrintHours] = useState(2);
   const [printMinutes, setPrintMinutes] = useState(30);
   const [materialGrams, setMaterialGrams] = useState(50);
@@ -25,44 +20,14 @@ export default function CalculatorAdmin() {
   const [electricityPrice, setElectricityPrice] = useState(0.15); // €/kWh
   const [marginPercent, setMarginPercent] = useState(100); // %
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [printersRes, materialsRes] = await Promise.all([
-          supabase.from('printers').select('*'),
-          supabase.from('materials').select('*')
-        ]);
-        
-        if (printersRes.data) {
-          setPrinters(printersRes.data);
-          if (printersRes.data.length > 0) setSelectedPrinterId(printersRes.data[0].id);
-        }
-        if (materialsRes.data) {
-          setMaterials(materialsRes.data);
-          if (materialsRes.data.length > 0) setSelectedMaterialId(materialsRes.data[0].id);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  const selectedPrinter = printers.find(p => p.id === selectedPrinterId);
-  const selectedMaterial = materials.find(m => m.id === selectedMaterialId);
+  const selectedPrinter = mockPrinters.find(p => p.id === selectedPrinterId);
+  const selectedMaterial = mockMaterials.find(m => m.id === selectedMaterialId);
 
   // Cálculos
   const timeInHours = printHours + (printMinutes / 60);
   
-  // We assume 350W as default if not available in DB (since powerWatts is not in our Supabase schema)
-  const powerWatts = 350; 
-  const electricityCost = selectedPrinter ? (powerWatts / 1000) * timeInHours * electricityPrice : 0;
-  
-  // We assume a cost of 0.02€ per gram as default (since costPerGram is not in schema)
-  const costPerGram = 0.02;
-  const materialCostBase = selectedMaterial ? materialGrams * costPerGram : 0;
+  const electricityCost = selectedPrinter ? (selectedPrinter.powerWatts / 1000) * timeInHours * electricityPrice : 0;
+  const materialCostBase = selectedMaterial ? materialGrams * selectedMaterial.costPerGram : 0;
   
   // Factor de fallo aplicado a costes directos de impresión
   const failureCost = (materialCostBase + electricityCost) * (failureFactor / 100); 
@@ -82,14 +47,6 @@ export default function CalculatorAdmin() {
     // Redirigir a la vista de productos pasando el precio sugerido en el estado
     navigate("/admin/products", { state: { suggestedPrice: suggestedPrice.toFixed(2) } });
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-32">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -124,7 +81,7 @@ export default function CalculatorAdmin() {
               {/* Selección de Impresora */}
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
-                  <PrinterIcon size={16} className="text-muted-foreground" />
+                  <Printer size={16} className="text-muted-foreground" />
                   Impresora
                 </label>
                 <select 
@@ -132,10 +89,9 @@ export default function CalculatorAdmin() {
                   value={selectedPrinterId}
                   onChange={(e) => setSelectedPrinterId(e.target.value)}
                 >
-                  {printers.map(p => (
-                    <option key={p.id} value={p.id}>{p.brand} {p.model}</option>
+                  {mockPrinters.map(p => (
+                    <option key={p.id} value={p.id}>{p.brand} {p.model} ({p.powerWatts}W)</option>
                   ))}
-                  {printers.length === 0 && <option value="" disabled>No hay impresoras</option>}
                 </select>
               </div>
 
@@ -150,10 +106,9 @@ export default function CalculatorAdmin() {
                   value={selectedMaterialId}
                   onChange={(e) => setSelectedMaterialId(e.target.value)}
                 >
-                  {materials.map(m => (
-                    <option key={m.id} value={m.id}>{m.material_type} - {m.color}</option>
+                  {mockMaterials.map(m => (
+                    <option key={m.id} value={m.id}>{m.type} - {m.color} ({m.costPerGram}€/g)</option>
                   ))}
-                  {materials.length === 0 && <option value="" disabled>No hay materiales</option>}
                 </select>
               </div>
 
