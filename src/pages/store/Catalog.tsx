@@ -13,10 +13,10 @@ export default function Catalog() {
     : visibleProducts.filter(p => p.category === filter);
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
+    <div className="container mx-auto px-4 py-8 md:py-16">
       {/* Hero Section */}
-      <div className="max-w-3xl mb-16 md:mb-24">
-        <h1 className="text-4xl md:text-6xl font-light leading-tight mb-6">
+      <div className="max-w-3xl mb-8 md:mb-16">
+        <h1 className="text-3xl md:text-6xl font-light leading-tight mb-4 md:mb-6">
           Ilumina tu espacio con <span className="font-semibold text-accent">diseño impreso en 3D.</span>
         </h1>
         <p className="text-lg text-muted-foreground">
@@ -26,10 +26,10 @@ export default function Catalog() {
       </div>
 
       {/* Filters and Catalog */}
-      <div className="mb-8 flex items-center justify-between border-b border-border pb-4">
+      <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-4">
         <h2 className="text-2xl font-light">Colección</h2>
         
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm overflow-x-auto pb-2 sm:pb-0 whitespace-nowrap">
           <span className="text-muted-foreground flex items-center gap-2">
             <Filter size={16} /> Filtrar:
           </span>
@@ -54,7 +54,7 @@ export default function Catalog() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
         {filteredProducts.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}

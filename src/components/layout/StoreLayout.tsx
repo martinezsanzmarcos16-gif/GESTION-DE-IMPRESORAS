@@ -58,39 +58,41 @@ export default function StoreLayout() {
             )}
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-card shadow-lg absolute top-full left-0 w-full animate-in slide-in-from-top-2">
+            <nav className="flex flex-col p-4 gap-2">
+              <Link 
+                to="/" 
+                className="px-4 py-3 rounded-md hover:bg-secondary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Catálogo
+              </Link>
+              <Link 
+                to="/about" 
+                className="px-4 py-3 rounded-md hover:bg-secondary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Nosotros
+              </Link>
+              <Link 
+                to="/admin" 
+                className="px-4 py-3 rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Admin
+              </Link>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Cart Drawer */}
       <CartDrawer />
 
-      {/* Mobile Navigation Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-card shadow-lg animate-in slide-in-from-top-2">
-          <nav className="flex flex-col p-4 gap-4">
-            <Link 
-              to="/" 
-              className="px-4 py-3 rounded-md hover:bg-secondary transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Catálogo
-            </Link>
-            <Link 
-              to="/about" 
-              className="px-4 py-3 rounded-md hover:bg-secondary transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Nosotros
-            </Link>
-            <Link 
-              to="/admin" 
-              className="px-4 py-3 rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Admin
-            </Link>
-          </nav>
-        </div>
-      )}
+
 
       {/* Main Content */}
       <main className="flex-1">

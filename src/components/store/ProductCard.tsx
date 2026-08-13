@@ -31,10 +31,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         <button
           onClick={handleAddToCart}
           disabled={!product.stock}
-          className="absolute bottom-4 right-4 p-3 bg-background/80 backdrop-blur-md rounded-full shadow-sm opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 disabled:hidden hover:bg-primary hover:text-primary-foreground"
+          className="absolute bottom-2 right-2 md:bottom-4 md:right-4 p-2 md:p-3 bg-background/90 backdrop-blur-md rounded-full shadow-sm opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 disabled:hidden hover:bg-primary hover:text-primary-foreground"
           aria-label="Add to cart"
         >
-          <ShoppingCart size={20} />
+          <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
         </button>
       </div>
       <div className="flex justify-between items-start">
